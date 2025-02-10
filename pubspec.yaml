@@ -8,8 +8,7 @@ environment:
 # Add regular dependencies here.
 dependencies:
   analyzer: ^6.8.0
-  analyzer_plugin:
-    path: pkg/analyzer_plugin-0.11.3
+  analyzer_plugin: any
   collection: ^1.19.1
   path: ^1.9.1
 
