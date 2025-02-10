@@ -24,7 +24,7 @@ Iterable<AnalysisErrorFixes> validate(
 
     if (!importedPath.startsWith(normalizedRoot)) continue;
 
-    final isPrivate = isPrivateImport(importedPath);
+    final isPrivate = isPrivateImport(importedPath, normalizedRoot);
 
     if (isPrivate) {
       final uriNode = directive.uri;
@@ -41,7 +41,7 @@ Iterable<AnalysisErrorFixes> validate(
           AnalysisErrorSeverity.ERROR,
           AnalysisErrorType.LINT,
           location,
-          'Direct import of  is not allowed because "$importedPath" exists.',
+          'Direct import of  is not allowed because "$importedPath" "Root: $normalizedRoot" exists.',
           'direct_import_with_index',
           correction: 'Import using "" instead.',
           hasFix: false,
@@ -51,8 +51,8 @@ Iterable<AnalysisErrorFixes> validate(
   }
 }
 
-bool isPrivateImport(String path) {
-  final dircs = getAllParentDirectories(path);
+bool isPrivateImport(String path, String normalizedRoot) {
+  final dircs = getAllParentDirectories(path, normalizedRoot);
 
   for (var dir in dircs) {
     if (hasDartIndex(dir)) return true;
@@ -63,17 +63,15 @@ bool isPrivateImport(String path) {
 
 bool hasDartIndex(String dir) => File('$dir/index.dart').existsSync();
 
-List<String> getAllParentDirectories(String path) {
-  List<String> parts = path.split('/');
+List<String> getAllParentDirectories(String path, String normalizedRoot) {
+  List<String> directories = [];
+  Directory current = Directory(path).absolute;
 
-  String currentPath = parts.first;
-
-  List<String> output = [parts.first];
-
-  for (int i = 1; i < parts.length - 1; i++) {
-    currentPath += '/${parts[i]}';
-    output.add(currentPath);
+  while (current.path.startsWith(normalizedRoot)) {
+    directories.insert(0, current.path);
+    if (current.path == normalizedRoot) break;
+    current = current.parent;
   }
 
-  return output;
+  return directories;
 }
