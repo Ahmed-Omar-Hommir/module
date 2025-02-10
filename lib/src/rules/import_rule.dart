@@ -17,8 +17,7 @@ Iterable<AnalysisErrorFixes> validate(
   final normalizedRoot = path_pkg.normalize(contextRoot.root.path);
 
   for (final directive in unit.unit.directives.whereType<ImportDirective>()) {
-    final uriNode = directive.uri;
-    final importedPath = uriNode.stringValue;
+    final importedPath = directive.element?.librarySource.fullName;
 
     // if (importedPath == null) continue;
 
@@ -29,6 +28,7 @@ Iterable<AnalysisErrorFixes> validate(
     // final isPrivate = isPrivateImport(importedPath, normalizedRoot);
 
     // if (isPrivate) {
+    final uriNode = directive.uri;
     final location = Location(
       unit.path,
       uriNode.offset,
