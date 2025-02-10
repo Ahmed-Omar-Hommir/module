@@ -22,7 +22,8 @@ Iterable<AnalysisErrorFixes> validate(
 
     if (importedPath == null) continue;
 
-    final directory = Directory(path_pkg.normalize(importedPath)).absolute;
+    final directory =
+        Directory(path_pkg.normalize(importedPath)).absolute.parent;
 
     // final isPrivate = isPrivateImport(normalizedImportedPath, normalizedRoot);
 
