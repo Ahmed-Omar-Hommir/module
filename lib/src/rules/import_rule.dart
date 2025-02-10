@@ -46,7 +46,7 @@ Iterable<AnalysisErrorFixes> validate(
         AnalysisErrorSeverity.ERROR,
         AnalysisErrorType.LINT,
         location,
-        'normalizedImportedPath: ${directory.path}, Root: $normalizedRoot',
+        '${dircs.join(' | ')}',
         'direct_import_with_index',
         hasFix: false,
       ),
