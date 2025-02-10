@@ -17,7 +17,7 @@ Iterable<AnalysisErrorFixes> validate(
   final normalizedRoot = path_pkg.normalize(contextRoot.root.path);
 
   for (final directive in unit.unit.directives.whereType<ImportDirective>()) {
-    final importedPath = directive.uri.stringValue;
+    final importedPath = directive.element?.name;
 
     // if (importedPath == null) continue;
 
