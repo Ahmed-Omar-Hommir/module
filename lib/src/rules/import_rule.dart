@@ -17,33 +17,38 @@ Iterable<AnalysisErrorFixes> validate(
   final normalizedRoot = path_pkg.normalize(contextRoot.root.path);
 
   for (final directive in unit.unit.directives.whereType<ImportDirective>()) {
-    final importedLibrary = directive.uri.stringValue;
-    if (importedLibrary == null) continue;
+    final uriNode = directive.uri;
+    final importedPath = uriNode.stringValue;
 
-    final isPrivate = isPrivateImport(importedLibrary, normalizedRoot);
+    if (importedPath == null) continue;
 
-    if (isPrivate) {
-      final uriNode = directive.uri;
-      final location = Location(
-        unit.path,
-        uriNode.offset,
-        uriNode.length,
-        unit.lineInfo.getLocation(uriNode.offset).lineNumber,
-        unit.lineInfo.getLocation(uriNode.offset).columnNumber,
-      );
+    final normalizedImportedPath = path_pkg.normalize(importedPath);
 
-      yield AnalysisErrorFixes(
-        AnalysisError(
-          AnalysisErrorSeverity.ERROR,
-          AnalysisErrorType.LINT,
-          location,
-          'Direct import of  is not allowed because "$importedLibrary" "Root: $normalizedRoot" exists.',
-          'direct_import_with_index',
-          correction: 'Import using "" instead.',
-          hasFix: false,
-        ),
-      );
-    }
+    if (!normalizedImportedPath.startsWith(normalizedRoot)) continue;
+
+    final isPrivate = isPrivateImport(importedPath, normalizedRoot);
+
+    // if (isPrivate) {
+    final location = Location(
+      unit.path,
+      uriNode.offset,
+      uriNode.length,
+      unit.lineInfo.getLocation(uriNode.offset).lineNumber,
+      unit.lineInfo.getLocation(uriNode.offset).columnNumber,
+    );
+
+    yield AnalysisErrorFixes(
+      AnalysisError(
+        AnalysisErrorSeverity.ERROR,
+        AnalysisErrorType.LINT,
+        location,
+        'Direct import of  is not allowed because "$importedPath" "Root: $normalizedRoot" exists.',
+        'direct_import_with_index',
+        correction: 'Import using "" instead.',
+        hasFix: false,
+      ),
+    );
+    // }
   }
 }
 
