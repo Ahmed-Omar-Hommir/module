@@ -20,7 +20,7 @@ Iterable<AnalysisErrorFixes> validate(
     final importedLibrary = directive.element?.library;
     if (importedLibrary == null) continue;
 
-    final importedPath = path_pkg.normalize(importedLibrary.source.fullName);
+    final importedPath = path_pkg.normalize(importedLibrary.name);
 
     if (!importedPath.startsWith(normalizedRoot)) continue;
 
