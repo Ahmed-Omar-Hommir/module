@@ -27,15 +27,14 @@ Iterable<AnalysisErrorFixes> validate(
 
     if (!normalizedImported.startsWith(normalizedRoot)) continue;
 
-    final importedDir = importedFile.parent;
-
-    final indexDart = importedDir.getChildAssumingFile('index.dart');
-    if (indexDart.exists) {
-      if (path_pkg.basename(importedFile.path) != 'index.dart') {
+    var currentDir = importedFile.parent;
+    while (currentDir.path != normalizedRoot) {
+      final indexDart = currentDir.getChildAssumingFile('index.dart');
+      if (indexDart.exists) {
         final currentFile = resourceProvider.getFile(unit.path);
-        final currentDir = currentFile.parent;
+        final currentDirOfFile = currentFile.parent;
         final relativePath =
-            path_pkg.relative(indexDart.path, from: currentDir.path);
+            path_pkg.relative(indexDart.path, from: currentDirOfFile.path);
         final posixRelativePath = relativePath.replaceAll(RegExp(r'\\'), '/');
 
         final uriLocation = import.uri;
@@ -52,13 +51,17 @@ Iterable<AnalysisErrorFixes> validate(
             AnalysisErrorSeverity.ERROR,
             AnalysisErrorType.LINT,
             location,
-            'Direct import of ${path_pkg.basename(importedFile.path)} is not allowed when index.dart exists in the same directory.',
+            'Direct import of ${path_pkg.basename(importedFile.path)} is not allowed because "$posixRelativePath" exists.',
             'direct_import_with_index',
             correction: 'Import using "$posixRelativePath" instead.',
             hasFix: false,
           ),
         );
+
+        break;
       }
+
+      currentDir = currentDir.parent;
     }
   }
 }
