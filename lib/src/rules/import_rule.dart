@@ -22,9 +22,9 @@ Iterable<AnalysisErrorFixes> validate(
 
     if (importedPath == null) continue;
 
-    final normalizedImportedPath = path_pkg.normalize(importedPath);
+    // final normalizedImportedPath = path_pkg.normalize(importedPath);
 
-    if (!normalizedImportedPath.startsWith(normalizedRoot)) continue;
+    // if (!normalizedImportedPath.startsWith(normalizedRoot)) continue;
 
     final isPrivate = isPrivateImport(importedPath, normalizedRoot);
 
