@@ -44,9 +44,8 @@ Iterable<AnalysisErrorFixes> validate(
         AnalysisErrorSeverity.ERROR,
         AnalysisErrorType.LINT,
         location,
-        'Direct import of  is not allowed because "${dircs.join(' | ')}" ',
+        'normalizedImportedPath: $normalizedImportedPath, Root: $normalizedRoot',
         'direct_import_with_index',
-        correction: 'Import using "" instead.',
         hasFix: false,
       ),
     );
