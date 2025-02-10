@@ -25,6 +25,8 @@ Iterable<AnalysisErrorFixes> validate(
     final directory =
         Directory(path_pkg.normalize(importedPath)).absolute.parent;
 
+    if (!directory.path.startsWith(normalizedRoot)) continue;
+
     // final isPrivate = isPrivateImport(normalizedImportedPath, normalizedRoot);
 
     final dircs = getAllParentDirectories(directory, normalizedRoot);
