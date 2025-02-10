@@ -20,13 +20,13 @@ Iterable<AnalysisErrorFixes> validate(
     final uriNode = directive.uri;
     final importedPath = uriNode.stringValue;
 
-    if (importedPath == null) continue;
+    // if (importedPath == null) continue;
 
     // final normalizedImportedPath = path_pkg.normalize(importedPath);
 
     // if (!normalizedImportedPath.startsWith(normalizedRoot)) continue;
 
-    final isPrivate = isPrivateImport(importedPath, normalizedRoot);
+    // final isPrivate = isPrivateImport(importedPath, normalizedRoot);
 
     // if (isPrivate) {
     final location = Location(
