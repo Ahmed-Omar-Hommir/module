@@ -12,38 +12,36 @@ Iterable<AnalysisErrorFixes> validate(
   AnalysisContext analysisContext,
 ) sync* {
   final resourceProvider = PhysicalResourceProvider.INSTANCE;
-  final contextRoot = analysisContext.contextRoot;
-  final rootPath = contextRoot.root.path;
 
-  for (var import in unit.unit.directives.whereType<ImportDirective>()) {
-    final importedLibrary = import.element?.library;
+  final contextRoot = analysisContext.contextRoot;
+  final normalizedRoot = path_pkg.normalize(contextRoot.root.path);
+
+  for (final directive in unit.unit.directives.whereType<ImportDirective>()) {
+    final importedLibrary = directive.element?.library;
     if (importedLibrary == null) continue;
 
-    final importedPath = importedLibrary.source.fullName;
+    final importedPath = path_pkg.normalize(importedLibrary.source.fullName);
+
+    if (!importedPath.startsWith(normalizedRoot)) continue;
+
     final importedFile = resourceProvider.getFile(importedPath);
-
-    final normalizedRoot = path_pkg.normalize(rootPath);
-    final normalizedImported = path_pkg.normalize(importedFile.path);
-
-    if (!normalizedImported.startsWith(normalizedRoot)) continue;
-
     var currentDir = importedFile.parent;
-    while (currentDir.path != normalizedRoot) {
+
+    while (currentDir.path.startsWith(normalizedRoot)) {
       final indexDart = currentDir.getChildAssumingFile('index.dart');
       if (indexDart.exists) {
         final currentFile = resourceProvider.getFile(unit.path);
-        final currentDirOfFile = currentFile.parent;
-        final relativePath =
-            path_pkg.relative(indexDart.path, from: currentDirOfFile.path);
-        final posixRelativePath = relativePath.replaceAll(RegExp(r'\\'), '/');
+        final relativePath = path_pkg
+            .relative(indexDart.path, from: currentFile.parent.path)
+            .replaceAll(r'\', '/');
 
-        final uriLocation = import.uri;
+        final uriNode = directive.uri;
         final location = Location(
           unit.path,
-          uriLocation.offset,
-          uriLocation.length,
-          unit.lineInfo.getLocation(uriLocation.offset).lineNumber,
-          unit.lineInfo.getLocation(uriLocation.offset).columnNumber,
+          uriNode.offset,
+          uriNode.length,
+          unit.lineInfo.getLocation(uriNode.offset).lineNumber,
+          unit.lineInfo.getLocation(uriNode.offset).columnNumber,
         );
 
         yield AnalysisErrorFixes(
@@ -51,15 +49,17 @@ Iterable<AnalysisErrorFixes> validate(
             AnalysisErrorSeverity.ERROR,
             AnalysisErrorType.LINT,
             location,
-            'Direct import of ${path_pkg.basename(importedFile.path)} is not allowed because "$posixRelativePath" exists.',
+            'Direct import of ${path_pkg.basename(importedFile.path)} is not allowed because "$relativePath" exists.',
             'direct_import_with_index',
-            correction: 'Import using "$posixRelativePath" instead.',
+            correction: 'Import using "$relativePath" instead.',
             hasFix: false,
           ),
         );
 
         break;
       }
+
+      if (currentDir.path == normalizedRoot) break;
 
       currentDir = currentDir.parent;
     }
