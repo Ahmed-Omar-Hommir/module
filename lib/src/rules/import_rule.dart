@@ -26,28 +26,28 @@ Iterable<AnalysisErrorFixes> validate(
 
     final isPrivate = isPrivateImport(normalizedImportedPath, normalizedRoot);
 
-    // if (isPrivate) {
-    final uriNode = directive.uri;
-    final location = Location(
-      unit.path,
-      uriNode.offset,
-      uriNode.length,
-      unit.lineInfo.getLocation(uriNode.offset).lineNumber,
-      unit.lineInfo.getLocation(uriNode.offset).columnNumber,
-    );
+    if (isPrivate) {
+      final uriNode = directive.uri;
+      final location = Location(
+        unit.path,
+        uriNode.offset,
+        uriNode.length,
+        unit.lineInfo.getLocation(uriNode.offset).lineNumber,
+        unit.lineInfo.getLocation(uriNode.offset).columnNumber,
+      );
 
-    yield AnalysisErrorFixes(
-      AnalysisError(
-        AnalysisErrorSeverity.ERROR,
-        AnalysisErrorType.LINT,
-        location,
-        'Direct import of  is not allowed because "$normalizedImportedPath" "Root: $normalizedRoot" ',
-        'direct_import_with_index',
-        correction: 'Import using "" instead.',
-        hasFix: false,
-      ),
-    );
-    // }
+      yield AnalysisErrorFixes(
+        AnalysisError(
+          AnalysisErrorSeverity.ERROR,
+          AnalysisErrorType.LINT,
+          location,
+          'Direct import of  is not allowed because "$normalizedImportedPath" "Root: $normalizedRoot" ',
+          'direct_import_with_index',
+          correction: 'Import using "" instead.',
+          hasFix: false,
+        ),
+      );
+    }
   }
 }
 
