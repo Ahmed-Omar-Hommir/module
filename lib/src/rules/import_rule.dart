@@ -13,8 +13,6 @@ Iterable<AnalysisErrorFixes> validate(
   ResolvedUnitResult unit,
   AnalysisContext analysisContext,
 ) sync* {
-  final resourceProvider = PhysicalResourceProvider.INSTANCE;
-
   final contextRoot = analysisContext.contextRoot;
   final normalizedRoot = path_pkg.normalize(contextRoot.root.path);
 
@@ -25,8 +23,6 @@ Iterable<AnalysisErrorFixes> validate(
     final importedPath = path_pkg.normalize(importedLibrary.source.fullName);
 
     if (!importedPath.startsWith(normalizedRoot)) continue;
-
-    //
 
     final isPrivate = isPrivateImport(importedPath);
 
@@ -45,7 +41,7 @@ Iterable<AnalysisErrorFixes> validate(
           AnalysisErrorSeverity.ERROR,
           AnalysisErrorType.LINT,
           location,
-          'Direct import of  is not allowed because "" exists.',
+          'Direct import of  is not allowed because "$importedPath" exists.',
           'direct_import_with_index',
           correction: 'Import using "" instead.',
           hasFix: false,
