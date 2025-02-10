@@ -17,6 +17,15 @@ Iterable<AnalysisErrorFixes> validate(
   final rootPath = contextRoot.root.path;
 
   for (var import in unit.unit.directives.whereType<ImportDirective>()) {
+    yield AnalysisErrorFixes(
+      AnalysisError(
+        AnalysisErrorSeverity.ERROR,
+        AnalysisErrorType.LINT,
+        Location(unit.path, 0, 0, 0, 0),
+        'Test 1',
+        'direct_import_with_index',
+      ),
+    );
     final importedLibrary = import.element?.library;
     if (importedLibrary == null) continue;
 
