@@ -4,7 +4,6 @@ import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer_plugin/protocol/protocol_common.dart';
 import 'package:analyzer_plugin/protocol/protocol_generated.dart';
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/file_system/physical_file_system.dart';
 import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:path/path.dart' as path_pkg;
 
@@ -44,7 +43,7 @@ Iterable<AnalysisErrorFixes> validate(
           AnalysisErrorSeverity.ERROR,
           AnalysisErrorType.LINT,
           location,
-          'Error',
+          'Direct import of ${directive.uri.toString()} is not allowed when index.dart exists in the same directory.',
           'direct_import_with_index',
           hasFix: false,
         ),
