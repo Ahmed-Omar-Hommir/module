@@ -22,12 +22,11 @@ Iterable<AnalysisErrorFixes> validate(
 
     if (importedPath == null) continue;
 
-    final normalizedImportedPath = path_pkg.normalize(importedPath);
+    final directory = Directory(path_pkg.normalize(importedPath)).absolute;
 
     // final isPrivate = isPrivateImport(normalizedImportedPath, normalizedRoot);
 
-    final dircs =
-        getAllParentDirectories(normalizedImportedPath, normalizedRoot);
+    final dircs = getAllParentDirectories(directory, normalizedRoot);
 
     // if (isPrivate) {
     final uriNode = directive.uri;
@@ -44,7 +43,7 @@ Iterable<AnalysisErrorFixes> validate(
         AnalysisErrorSeverity.ERROR,
         AnalysisErrorType.LINT,
         location,
-        'normalizedImportedPath: $normalizedImportedPath, Root: $normalizedRoot',
+        'normalizedImportedPath: ${directory.path}, Root: $normalizedRoot',
         'direct_import_with_index',
         hasFix: false,
       ),
@@ -53,8 +52,8 @@ Iterable<AnalysisErrorFixes> validate(
   }
 }
 
-bool isPrivateImport(String path, String normalizedRoot) {
-  final dircs = getAllParentDirectories(path, normalizedRoot);
+bool isPrivateImport(Directory directory, String normalizedRoot) {
+  final dircs = getAllParentDirectories(directory, normalizedRoot);
 
   for (var dir in dircs) {
     if (hasDartIndex(dir)) return true;
@@ -65,9 +64,12 @@ bool isPrivateImport(String path, String normalizedRoot) {
 
 bool hasDartIndex(String dir) => File('$dir/index.dart').existsSync();
 
-List<String> getAllParentDirectories(String path, String normalizedRoot) {
+List<String> getAllParentDirectories(
+  Directory directory,
+  String normalizedRoot,
+) {
   List<String> directories = [];
-  Directory current = Directory(path).absolute;
+  Directory current = directory.absolute;
 
   while (current.path.startsWith(normalizedRoot)) {
     directories.insert(0, current.path);
