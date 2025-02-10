@@ -17,7 +17,7 @@ Iterable<AnalysisErrorFixes> validate(
   final normalizedRoot = path_pkg.normalize(contextRoot.root.path);
 
   for (final directive in unit.unit.directives.whereType<ImportDirective>()) {
-    final importedPath = directive.element?.librarySource.fullName;
+    final importedPath = directive.uri.stringValue;
 
     // if (importedPath == null) continue;
 
@@ -42,7 +42,7 @@ Iterable<AnalysisErrorFixes> validate(
         AnalysisErrorSeverity.ERROR,
         AnalysisErrorType.LINT,
         location,
-        'Direct import of  is not allowed because "$importedPath" "Root: $normalizedRoot" exists.',
+        'Direct import of  is not allowed because "$importedPath" "Path: $path" ',
         'direct_import_with_index',
         correction: 'Import using "" instead.',
         hasFix: false,
