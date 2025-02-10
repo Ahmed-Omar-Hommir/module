@@ -17,14 +17,10 @@ Iterable<AnalysisErrorFixes> validate(
   final normalizedRoot = path_pkg.normalize(contextRoot.root.path);
 
   for (final directive in unit.unit.directives.whereType<ImportDirective>()) {
-    final importedLibrary = directive.element?.library;
+    final importedLibrary = directive.uri.stringValue;
     if (importedLibrary == null) continue;
 
-    final importedPath = path_pkg.normalize(importedLibrary.name);
-
-    if (!importedPath.startsWith(normalizedRoot)) continue;
-
-    final isPrivate = isPrivateImport(importedPath, normalizedRoot);
+    final isPrivate = isPrivateImport(importedLibrary, normalizedRoot);
 
     if (isPrivate) {
       final uriNode = directive.uri;
@@ -41,7 +37,7 @@ Iterable<AnalysisErrorFixes> validate(
           AnalysisErrorSeverity.ERROR,
           AnalysisErrorType.LINT,
           location,
-          'Direct import of  is not allowed because "$importedPath" "Root: $normalizedRoot" exists.',
+          'Direct import of  is not allowed because "$importedLibrary" "Root: $normalizedRoot" exists.',
           'direct_import_with_index',
           correction: 'Import using "" instead.',
           hasFix: false,
