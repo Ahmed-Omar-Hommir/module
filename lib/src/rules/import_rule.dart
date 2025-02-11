@@ -13,8 +13,7 @@ Iterable<AnalysisErrorFixes> validate(
   AnalysisContext analysisContext,
 ) sync* {
   final contextRoot = analysisContext.contextRoot;
-  final normalizedRoot = path_pkg.normalize(contextRoot.root.path);
-  final currentFilePath = path;
+  final rootPath = path_pkg.normalize(contextRoot.root.path);
 
   for (final directive in unit.unit.directives
       .where((d) => d is ImportDirective || d is ExportDirective)) {
@@ -37,10 +36,12 @@ Iterable<AnalysisErrorFixes> validate(
     final importedFile = File(path_pkg.normalize(referencedPath));
     final importedFilePath = importedFile.path;
 
-    if (!path_pkg.isWithin(normalizedRoot, importedFilePath)) continue;
+    if (!path_pkg.isWithin(rootPath, importedFilePath)) continue;
 
-    final isPrivate =
-        isPrivateImport(importedFilePath, normalizedRoot, currentFilePath);
+    final isPrivate = isPrivateImport(
+      importedFilePath.replaceFirst(rootPath, ''),
+      path.replaceFirst(rootPath, ''),
+    );
 
     if (isPrivate) {
       final location = Location(
@@ -66,10 +67,11 @@ Iterable<AnalysisErrorFixes> validate(
 }
 
 bool isPrivateImport(
-    String importedFilePath, String normalizedRoot, String currentFilePath) {
+  String importedFilePath,
+  String currentFilePath,
+) {
   final importedFileDir = path_pkg.dirname(importedFilePath);
-  final directories =
-      getAllParentDirectories(Directory(importedFileDir), normalizedRoot);
+  final directories = getAllParentDirectories(Directory(importedFileDir));
 
   for (final dirPath in directories) {
     if (hasDartIndex(dirPath)) {
@@ -92,19 +94,16 @@ bool _isWithin(String parent, String child) {
 bool hasDartIndex(String dirPath) =>
     File(path_pkg.join(dirPath, 'index.dart')).existsSync();
 
-List<String> getAllParentDirectories(
-  Directory directory,
-  String normalizedRoot,
-) {
+List<String> getAllParentDirectories(Directory directory) {
   List<String> directories = [];
   Directory current = directory.absolute;
 
-  while (path_pkg.isWithin(normalizedRoot, current.path) ||
-      current.path == normalizedRoot) {
+  while (current.parent.path != current.path) {
     directories.add(current.path);
-    if (current.path == normalizedRoot) break;
     current = current.parent;
   }
+
+  directories.add(current.path);
 
   return directories;
 }
