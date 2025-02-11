@@ -14,6 +14,7 @@ Iterable<AnalysisErrorFixes> validate(
 ) sync* {
   final contextRoot = analysisContext.contextRoot;
   final normalizedRoot = path_pkg.normalize(contextRoot.root.path);
+  final currentFilePath = path;
 
   for (final directive in unit.unit.directives
       .where((d) => d is ImportDirective || d is ExportDirective)) {
@@ -33,11 +34,13 @@ Iterable<AnalysisErrorFixes> validate(
 
     if (referencedPath == null) continue;
 
-    final directory = Directory(path_pkg.normalize(referencedPath)).absolute;
+    final importedFile = File(path_pkg.normalize(referencedPath));
+    final importedFilePath = importedFile.path;
 
-    if (!directory.path.startsWith(normalizedRoot)) continue;
+    if (!path_pkg.isWithin(normalizedRoot, importedFilePath)) continue;
 
-    final isPrivate = isPrivateImport(directory, normalizedRoot);
+    final isPrivate =
+        isPrivateImport(importedFilePath, normalizedRoot, currentFilePath);
 
     if (isPrivate) {
       final location = Location(
@@ -53,7 +56,7 @@ Iterable<AnalysisErrorFixes> validate(
           AnalysisErrorSeverity.ERROR,
           AnalysisErrorType.LINT,
           location,
-          'Direct import of ${uriNode.toString()} is not allowed when index.dart exists in the same directory.',
+          'Direct import of ${uriNode.toString()} is not allowed. Use the index.dart file from the same module instead.',
           'direct_import_with_index',
           hasFix: false,
         ),
@@ -62,20 +65,32 @@ Iterable<AnalysisErrorFixes> validate(
   }
 }
 
-bool isPrivateImport(Directory directory, String normalizedRoot) {
-  final isIndexImport = directory.path.split('/').last == 'index.dart';
-  final dircs = getAllParentDirectories(
-      isIndexImport ? directory.parent.parent : directory.parent,
-      normalizedRoot);
+bool isPrivateImport(
+    String importedFilePath, String normalizedRoot, String currentFilePath) {
+  final importedFileDir = path_pkg.dirname(importedFilePath);
+  final directories =
+      getAllParentDirectories(Directory(importedFileDir), normalizedRoot);
 
-  for (var dir in dircs) {
-    if (hasDartIndex(dir)) return true;
+  for (final dirPath in directories) {
+    if (hasDartIndex(dirPath)) {
+      final modulePath = dirPath;
+      if (!_isWithin(modulePath, currentFilePath)) {
+        return true;
+      }
+    }
   }
 
   return false;
 }
 
-bool hasDartIndex(String dir) => File('$dir/index.dart').existsSync();
+bool _isWithin(String parent, String child) {
+  final parentNormalized = path_pkg.normalize(parent);
+  final childNormalized = path_pkg.normalize(child);
+  return path_pkg.isWithin(parentNormalized, childNormalized);
+}
+
+bool hasDartIndex(String dirPath) =>
+    File(path_pkg.join(dirPath, 'index.dart')).existsSync();
 
 List<String> getAllParentDirectories(
   Directory directory,
@@ -84,8 +99,9 @@ List<String> getAllParentDirectories(
   List<String> directories = [];
   Directory current = directory.absolute;
 
-  while (current.path.startsWith(normalizedRoot)) {
-    directories.insert(0, current.path);
+  while (path_pkg.isWithin(normalizedRoot, current.path) ||
+      current.path == normalizedRoot) {
+    directories.add(current.path);
     if (current.path == normalizedRoot) break;
     current = current.parent;
   }
