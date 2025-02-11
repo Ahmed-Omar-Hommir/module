@@ -15,20 +15,31 @@ Iterable<AnalysisErrorFixes> validate(
   final contextRoot = analysisContext.contextRoot;
   final normalizedRoot = path_pkg.normalize(contextRoot.root.path);
 
-  for (final directive in unit.unit.directives.whereType<ImportDirective>()) {
-    final importedPath =
-        directive.element?.importedLibrary?.librarySource.fullName;
+  for (final directive in unit.unit.directives
+      .where((d) => d is ImportDirective || d is ExportDirective)) {
+    late final String? referencedPath;
+    late final StringLiteral uriNode;
+    if (directive is ImportDirective) {
+      referencedPath =
+          directive.element?.importedLibrary?.librarySource.fullName;
+      uriNode = directive.uri;
+    } else if (directive is ExportDirective) {
+      referencedPath =
+          directive.element?.exportedLibrary?.librarySource.fullName;
+      uriNode = directive.uri;
+    } else {
+      continue;
+    }
 
-    if (importedPath == null) continue;
+    if (referencedPath == null) continue;
 
-    final directory = Directory(path_pkg.normalize(importedPath)).absolute;
+    final directory = Directory(path_pkg.normalize(referencedPath)).absolute;
 
     if (!directory.path.startsWith(normalizedRoot)) continue;
 
     final isPrivate = isPrivateImport(directory, normalizedRoot);
 
     if (isPrivate) {
-      final uriNode = directive.uri;
       final location = Location(
         unit.path,
         uriNode.offset,
@@ -42,7 +53,7 @@ Iterable<AnalysisErrorFixes> validate(
           AnalysisErrorSeverity.ERROR,
           AnalysisErrorType.LINT,
           location,
-          'Direct import of ${directive.uri.toString()} is not allowed when index.dart exists in the same directory.',
+          'Direct import of ${uriNode.toString()} is not allowed when index.dart exists in the same directory.',
           'direct_import_with_index',
           hasFix: false,
         ),
