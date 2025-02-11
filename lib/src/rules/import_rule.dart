@@ -43,7 +43,7 @@ Iterable<AnalysisErrorFixes> validate(
           AnalysisErrorSeverity.ERROR,
           AnalysisErrorType.LINT,
           location,
-          'Direct import of ${directive.uri.toString()} is not allowed when module.dart exists in the same directory.',
+          'Direct import of ${directive.uri.toString()} is not allowed when index.dart exists in the same directory.',
           'direct_import_with_index',
           hasFix: false,
         ),
@@ -62,7 +62,7 @@ bool isPrivateImport(Directory directory, String normalizedRoot) {
   return false;
 }
 
-bool hasDartIndex(String dir) => File('$dir/module.dart').existsSync();
+bool hasDartIndex(String dir) => File('$dir/index.dart').existsSync();
 
 List<String> getAllParentDirectories(
   Directory directory,
