@@ -54,7 +54,7 @@ Iterable<AnalysisErrorFixes> validate(
 bool isPrivateImport(Directory directory, String normalizedRoot) {
   final isIndexImport = directory.path.split('/').last == 'index.dart';
   final dircs = getAllParentDirectories(
-      isIndexImport ? directory.parent : directory.parent.parent,
+      isIndexImport ? directory.parent.parent : directory.parent,
       normalizedRoot);
 
   for (var dir in dircs) {
