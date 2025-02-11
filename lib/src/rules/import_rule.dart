@@ -21,8 +21,7 @@ Iterable<AnalysisErrorFixes> validate(
 
     if (importedPath == null) continue;
 
-    final directory =
-        Directory(path_pkg.normalize(importedPath)).absolute.parent;
+    final directory = Directory(path_pkg.normalize(importedPath)).absolute;
 
     if (!directory.path.startsWith(normalizedRoot)) continue;
 
@@ -53,7 +52,10 @@ Iterable<AnalysisErrorFixes> validate(
 }
 
 bool isPrivateImport(Directory directory, String normalizedRoot) {
-  final dircs = getAllParentDirectories(directory, normalizedRoot);
+  final isIndexImport = directory.path.split('/').last == 'index.dart';
+  final dircs = getAllParentDirectories(
+      isIndexImport ? directory.parent : directory.parent.parent,
+      normalizedRoot);
 
   for (var dir in dircs) {
     if (hasDartIndex(dir)) return true;
